@@ -1,0 +1,7 @@
+[package]
+name = "parsing_experiments"
+version = "0.1.0"
+authors = ["waved"]
+
+[dependencies]
+nom = "^3.2"
