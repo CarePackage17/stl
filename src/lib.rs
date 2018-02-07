@@ -61,6 +61,16 @@ mod tests {
         assert_eq!(triangle.2.y, 40.1f32);
         assert_eq!(triangle.2.z, 22.3f32);
     }
+
+    #[test]
+    fn parse_facet() {
+        let facet_bytes = b"normal 0.2 0.3 0.4\nouter loop\nvertex 1.0 2.3 3.4\nvertex 2.2 2.5 3.9\nvertex 3.5 40.1 22.3\nendloop";
+
+        let facet = facet_parser(facet_bytes).unwrap().1;
+        assert_eq!(facet.0.x, 0.2f32);
+        assert_eq!(facet.0.y, 0.3f32);
+        assert_eq!(facet.0.z, 0.4f32);
+    }
 }
 
 #[macro_use]
@@ -80,17 +90,20 @@ impl Vertex {
     }
 }
 
-// pub struct Triangle {
-//     pub vertices: [Vertex; 3]
-// }
+pub struct Facet {
+    pub normal: Vertex,
+    pub a: Vertex,
+    pub b: Vertex,
+    pub c: Vertex
+}
 
-// impl Triangle {
-//     pub fn from_vertices(tuple: (Vertex, Vertex, Vertex)) -> Triangle {
-//         Triangle {
-//             vertices = 
-//         }
-//     }
-// }
+impl Facet {
+    // pub fn from_vertices(tuple: (Vertex, Vertex, Vertex)) -> Facet {
+    //     Facet {
+    //         vertices = 
+    //     }
+    // }
+}
 
 named!(pub test_parser, tag!("test"));
 
@@ -100,11 +113,27 @@ named!(pub normal_parser<&[u8], (f32, f32, f32)>, ws!(preceded!(tag!("normal"), 
 
 named!(pub vertex_with_custom_type<&[u8], Vertex>, map!(vertex_parser, Vertex::new));
 
+named!(pub normal_with_custom_type<&[u8], Vertex>, map!(normal_parser, Vertex::new));
+
 named!(pub triangle_parser<&[u8], (Vertex, Vertex, Vertex)>, ws!(tuple!(vertex_with_custom_type, vertex_with_custom_type, vertex_with_custom_type)));
 
 //we also need to deal with outer loop and endloop words
 named!(pub loop_record<&[u8], (Vertex, Vertex, Vertex)>, ws!(delimited!(tag!("outer loop"), triangle_parser, tag!("endloop"))));
 
 //single facet needs a custom return type that wraps the normal and the 3 vertices
+// named!(pub facet_parser<&[u8], (Vertex, Vertex, Vertex, Vertex)>, ws!(delimited!(preceded!("facet", vertex_with_custom_type), loop_record, tag!("endfacet"))));
+
+named!(pub facet_parser<&[u8], (Vertex, (Vertex, Vertex, Vertex))>, ws!(tuple!(normal_with_custom_type, loop_record))); //at the end we still need endfacet -> terminated!
+
+//do_parse! seems to be the solution for multiple subparser chaining and result aggregation
+// named!(normal_and_triangle<&[u8], Facet>, )
 
 //for parsing multiple facets whe should use many0
+
+// facet normal ni nj nk
+//     outer loop
+//         vertex v1x v1y v1z
+//         vertex v2x v2y v2z
+//         vertex v3x v3y v3z
+//     endloop
+// endfacet
