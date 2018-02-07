@@ -97,6 +97,27 @@ mod tests {
         assert_eq!(four_tuple.3.y, 40.1f32);
         assert_eq!(four_tuple.3.z, 22.3f32);
     }
+
+    #[test]
+    fn parse_facets() {
+        let facet_bytes = b"facet  normal 0.2 0.3 0.4\nouter loop\nvertex 1.0 2.3 3.4\nvertex 2.2 2.5 3.9\nvertex 3.5 40.1 22.3\nendloop endfacet
+                            \nfacet normal 55.5 66.6 77.7\nouter loop\nvertex 10.1 11.1 12.3\nvertex 20.2 21.3 24.6\nvertex 3.3 6.9 4.7\nendloop endfacet";
+
+        let vec = facet_list(facet_bytes).unwrap().1;
+        assert_eq!(vec.len(), 2);
+
+        let first = &vec[0];
+        let second = &vec[1];
+
+        //first face normal
+        assert_eq!(first.0.x, 0.2f32);
+        assert_eq!(first.0.y, 0.3f32);
+        assert_eq!(first.0.z, 0.4f32);
+
+        assert_eq!(second.0.x, 55.5f32);
+        assert_eq!(second.0.y, 66.6f32);
+        assert_eq!(second.0.z, 77.7f32);
+    }
 }
 
 #[macro_use]
@@ -153,9 +174,7 @@ named!(pub triangle_parser<&[u8], (Vertex, Vertex, Vertex)>,
 named!(pub loop_record<&[u8], (Vertex, Vertex, Vertex)>, ws!(delimited!(tag!("outer loop"), triangle_parser, tag!("endloop"))));
 
 //single facet needs a custom return type that wraps the normal and the 3 vertices
-// named!(pub facet_parser<&[u8], (Vertex, Vertex, Vertex, Vertex)>, ws!(delimited!(preceded!("facet", vertex_with_custom_type), loop_record, tag!("endfacet"))));
-
-named!(pub facet_parser<&[u8], (Vertex, (Vertex, Vertex, Vertex))>, ws!(tuple!(normal_with_custom_type, loop_record))); //at the end we still need endfacet -> terminated!
+named!(pub facet_parser<&[u8], (Vertex, (Vertex, Vertex, Vertex))>, ws!(tuple!(normal_with_custom_type, loop_record)));
 
 //do_parse! seems to be the solution for multiple subparser chaining and result aggregation
 named!(pub facet_parser_complete<&[u8], (Vertex, Vertex, Vertex, Vertex)>,
@@ -170,12 +189,10 @@ named!(pub facet_parser_complete<&[u8], (Vertex, Vertex, Vertex, Vertex)>,
     )
 );
 
-//for parsing multiple facets whe should use many0
+named!(pub facet_list<&[u8], Vec<(Vertex, Vertex, Vertex, Vertex)>>,
+    ws!(
+        many0!(facet_parser_complete)
+    )
+);
 
-// facet normal ni nj nk
-//     outer loop
-//         vertex v1x v1y v1z
-//         vertex v2x v2y v2z
-//         vertex v3x v3y v3z
-//     endloop
-// endfacet
+//now the only thing missing is the start and end tags. that shit went fast, really.
