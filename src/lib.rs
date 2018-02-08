@@ -123,7 +123,7 @@ mod tests {
     fn parse_name() {
         let bytes = b"solid     dude aaaaa whatever   \n";
 
-        let name = parse_next_word(bytes).unwrap().1;
+        let name = parse_beginning(bytes).unwrap().1;
         assert_eq!(name.unwrap(), b"dude");
     }
 }
@@ -203,19 +203,7 @@ named!(pub facet_list<&[u8], Vec<(Vertex, Vertex, Vertex, Vertex)>>,
     )
 );
 
-//we need the next string token here, which is name
-//the csv sample could help us here since they need to deal with useless chars too
-// named!(pub parse_solid <&[u8], Option<&[u8]> >, 
-//     do_parse!(
-//         tag!("solid") >>
-//         take_while!(is_space) >>
-//         name: opt!(alpha) >>
-//         take_until_and_consume!(line_ending) >>
-//         (name)
-//     )
-// );
-
-named!(parse_next_word<&[u8], Option<&[u8]>>,
+named!(parse_beginning<&[u8], Option<&[u8]>>,
     do_parse!(
         tag!("solid") >>
         take_while!(is_space) >>
@@ -225,4 +213,14 @@ named!(parse_next_word<&[u8], Option<&[u8]>>,
     )
 );
 
-//now the only thing missing is the start and end tags. that shit went fast, really.
+named!(parse_ending<&[u8], Option<&[u8]>>,
+    do_parse!(
+        tag!("endsolid") >>
+        take_while!(is_space) >>
+        name: opt!(alpha) >>
+        (name)
+    )
+);
+
+//we need to verify! if the name matches at the beginning/end
+//also, we should probably return custom structs instead of tuples (readability and such)
