@@ -118,12 +118,20 @@ mod tests {
         assert_eq!(second.0.y, 66.6f32);
         assert_eq!(second.0.z, 77.7f32);
     }
+
+    #[test]
+    fn parse_name() {
+        let bytes = b"solid     dude aaaaa whatever   \n";
+
+        let name = parse_next_word(bytes).unwrap().1;
+        assert_eq!(name.unwrap(), b"dude");
+    }
 }
 
 #[macro_use]
 extern crate nom;
 
-use nom::float;
+use nom::{float, is_space, alpha};
 
 pub struct Vertex {
     pub x: f32,
@@ -192,6 +200,28 @@ named!(pub facet_parser_complete<&[u8], (Vertex, Vertex, Vertex, Vertex)>,
 named!(pub facet_list<&[u8], Vec<(Vertex, Vertex, Vertex, Vertex)>>,
     ws!(
         many0!(facet_parser_complete)
+    )
+);
+
+//we need the next string token here, which is name
+//the csv sample could help us here since they need to deal with useless chars too
+// named!(pub parse_solid <&[u8], Option<&[u8]> >, 
+//     do_parse!(
+//         tag!("solid") >>
+//         take_while!(is_space) >>
+//         name: opt!(alpha) >>
+//         take_until_and_consume!(line_ending) >>
+//         (name)
+//     )
+// );
+
+named!(parse_next_word<&[u8], Option<&[u8]>>,
+    do_parse!(
+        tag!("solid") >>
+        take_while!(is_space) >>
+        name: opt!(alpha) >>
+        take_until_and_consume!("\n") >>
+        (name)
     )
 );
 
