@@ -126,6 +126,29 @@ mod tests {
         let name = parse_beginning(bytes).unwrap().1;
         assert_eq!(name.unwrap(), b"dude");
     }
+
+    #[test]
+    fn parse_full() {
+        let bytes = include_bytes!("../test_files/cube.stl");
+        let verts = parse_ascii_stl(bytes).unwrap().1;
+
+        let first = &verts[0];
+        assert_eq!(first.0.x, 0.0f32);
+        assert_eq!(first.0.y, 0.0f32);
+        assert_eq!(first.0.z, -1.0f32);
+
+        assert_eq!(first.1.x, 0.0f32);
+        assert_eq!(first.1.y, 0.0f32);
+        assert_eq!(first.1.z, 0.0f32);
+
+        assert_eq!(first.2.x, 1.0f32);
+        assert_eq!(first.2.y, 1.0f32);
+        assert_eq!(first.2.z, 0.0f32);
+
+        assert_eq!(first.3.x, 1.0f32);
+        assert_eq!(first.3.y, 0.0f32);
+        assert_eq!(first.3.z, 0.0f32);
+    }
 }
 
 #[macro_use]
@@ -213,12 +236,22 @@ named!(parse_beginning<&[u8], Option<&[u8]>>,
     )
 );
 
+//sometimes there's no name after endsolid, sometimes there is
 named!(parse_ending<&[u8], Option<&[u8]>>,
     do_parse!(
         tag!("endsolid") >>
         take_while!(is_space) >>
         name: opt!(alpha) >>
         (name)
+    )
+);
+
+named!(parse_ascii_stl<&[u8], Vec<(Vertex, Vertex, Vertex, Vertex)>>,
+    do_parse!(
+        parse_beginning >>
+        facets: facet_list >>
+        parse_ending >>
+        (facets)
     )
 );
 

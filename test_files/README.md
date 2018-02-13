@@ -1,0 +1,1 @@
+The sample files in this directory can be found [here](http://people.sc.fsu.edu/~jburkardt/data/stla/stla.html); they are licensed under the [LGPL](http://people.sc.fsu.edu/~jburkardt/txt/gnu_lgpl.txt).
