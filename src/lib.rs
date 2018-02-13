@@ -4,19 +4,9 @@ mod tests {
 
     #[test]
     fn parse_vertex() {
-        let vertex = "vertex 1.0 2.3 3.4";
-
-        let tuple = vertex_parser(vertex.as_bytes()).unwrap().1;
-        assert_eq!(tuple.0, 1.0f32);
-        assert_eq!(tuple.1, 2.3f32);
-        assert_eq!(tuple.2, 3.4f32);
-    }
-
-    #[test]
-    fn parse_vertex_custom_type() {
         let vertex_str = b"vertex 1.0 2.3 3.4";
 
-        let vertex = vertex_with_custom_type(vertex_str).unwrap().1;
+        let vertex = vertex_parser(vertex_str).unwrap().1;
         assert_eq!(vertex.x, 1.0f32);
         assert_eq!(vertex.y, 2.3f32);
         assert_eq!(vertex.z, 3.4f32);
@@ -154,50 +144,37 @@ mod tests {
 #[macro_use]
 extern crate nom;
 
+mod data;
+
+use data::Vertex;
 use nom::{float, is_space, alpha};
 
-pub struct Vertex {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-}
 
-impl Vertex {
-    pub fn new(tuple: (f32, f32, f32)) -> Vertex {
-        Vertex {
-            x: tuple.0,
-            y: tuple.1,
-            z: tuple.2,
-        }
-    }
-}
+named!(pub vertex_parser<&[u8], Vertex>, 
+    map!(
+        ws!(
+            preceded!(
+                tag!("vertex"), tuple!(float, float, float)
+            )
+        ),
+        Vertex::from_tuple
+    )
+);
 
-pub struct Facet {
-    pub normal: Vertex,
-    pub a: Vertex,
-    pub b: Vertex,
-    pub c: Vertex,
-}
-
-impl Facet {
-    // pub fn from_vertices(tuple: (Vertex, Vertex, Vertex)) -> Facet {
-    //     Facet {
-    //         vertices =
-    //     }
-    // }
-}
-
-named!(pub vertex_parser<&[u8], (f32, f32, f32)>, ws!(preceded!(tag!("vertex"), tuple!(float, float, float))));
-
-named!(pub normal_parser<&[u8], (f32, f32, f32)>, ws!(preceded!(tag!("normal"), tuple!(float, float, float))));
-
-named!(pub vertex_with_custom_type<&[u8], Vertex>, map!(vertex_parser, Vertex::new));
-
-named!(pub normal_with_custom_type<&[u8], Vertex>, map!(normal_parser, Vertex::new));
+named!(pub normal_parser<&[u8], Vertex>, 
+    map!(
+        ws!(
+            preceded!(
+                tag!("normal"), tuple!(float, float, float)
+            )
+        ),
+        Vertex::from_tuple
+    )
+);
 
 named!(pub triangle_parser<&[u8], (Vertex, Vertex, Vertex)>,
     ws!(
-        tuple!(vertex_with_custom_type, vertex_with_custom_type, vertex_with_custom_type)
+        tuple!(vertex_parser, vertex_parser, vertex_parser)
     )
 );
 
@@ -205,14 +182,14 @@ named!(pub triangle_parser<&[u8], (Vertex, Vertex, Vertex)>,
 named!(pub loop_record<&[u8], (Vertex, Vertex, Vertex)>, ws!(delimited!(tag!("outer loop"), triangle_parser, tag!("endloop"))));
 
 //single facet needs a custom return type that wraps the normal and the 3 vertices
-named!(pub facet_parser<&[u8], (Vertex, (Vertex, Vertex, Vertex))>, ws!(tuple!(normal_with_custom_type, loop_record)));
+named!(pub facet_parser<&[u8], (Vertex, (Vertex, Vertex, Vertex))>, ws!(tuple!(normal_parser, loop_record)));
 
 //do_parse! seems to be the solution for multiple subparser chaining and result aggregation
 named!(pub facet_parser_complete<&[u8], (Vertex, Vertex, Vertex, Vertex)>,
     ws!(
         do_parse!(
             tag!("facet") >>
-            normal: normal_with_custom_type >>
+            normal: normal_parser >>
             tri: loop_record >>
             tag!("endfacet") >>
             (normal, tri.0, tri.1, tri.2)
