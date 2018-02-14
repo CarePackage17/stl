@@ -133,10 +133,10 @@ mod tests {
 #[macro_use]
 extern crate nom;
 
-mod data;
+pub mod data;
 
 use data::{Vertex, Facet};
-use nom::{float, is_space, alpha};
+use nom::{float, is_space, alpha, IResult};
 
 
 named!(vertex_parser<&[u8], Vertex>, 
@@ -215,7 +215,7 @@ named!(parse_ending<&[u8], Option<&[u8]>>,
     )
 );
 
-named!(pub parse_ascii_stl<&[u8], Vec<Facet>>,
+named!(parse_full_ascii_stl<&[u8], Vec<Facet>>,
     do_parse!(
         parse_beginning >>
         facets: facet_list_struct >>
@@ -223,3 +223,8 @@ named!(pub parse_ascii_stl<&[u8], Vec<Facet>>,
         (facets)
     )
 );
+
+/// Parses an ASCII .stl file and returns the list of facets.
+pub fn parse_ascii_stl(input: &[u8]) -> IResult<&[u8], Vec<Facet>> {
+    parse_full_ascii_stl(input)
+}

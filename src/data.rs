@@ -1,3 +1,7 @@
+//! data module.
+
+/// A single vertex in an .stl file.
+/// Consists of 3 f32 coordinates.
 pub struct Vertex {
     pub x: f32,
     pub y: f32,
@@ -5,6 +9,7 @@ pub struct Vertex {
 }
 
 impl Vertex {
+    /// Creates a Vertex from a 3-tuple of f32.
     pub fn from_tuple(tuple: (f32, f32, f32)) -> Vertex {
         Vertex {
             x: tuple.0,
@@ -14,6 +19,7 @@ impl Vertex {
     }
 }
 
+/// A triangle facet consisting of a normal vector and 3 vertices.
 pub struct Facet {
     pub normal: Vertex,
     pub a: Vertex,
