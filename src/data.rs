@@ -1,7 +1,6 @@
-//! data module.
-
 /// A single vertex in an .stl file.
 /// Consists of 3 f32 coordinates.
+#[derive(Debug)]
 pub struct Vertex {
     pub x: f32,
     pub y: f32,
@@ -20,6 +19,7 @@ impl Vertex {
 }
 
 /// A triangle facet consisting of a normal vector and 3 vertices.
+#[derive(Debug)]
 pub struct Facet {
     pub normal: Vertex,
     pub a: Vertex,

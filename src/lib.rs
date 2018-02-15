@@ -133,9 +133,9 @@ mod tests {
 #[macro_use]
 extern crate nom;
 
-pub mod data;
+mod data;
 
-use data::{Vertex, Facet};
+pub use data::{Vertex, Facet};
 use nom::{float, is_space, alpha, IResult};
 
 
