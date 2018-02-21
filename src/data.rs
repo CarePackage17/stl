@@ -22,13 +22,18 @@ impl Vertex {
 #[derive(Debug)]
 pub struct Facet {
     pub normal: Vertex,
-    pub a: Vertex,
-    pub b: Vertex,
-    pub c: Vertex,
+    pub v1: Vertex,
+    pub v2: Vertex,
+    pub v3: Vertex,
+    pub attribute: u16
 }
 
 impl Facet {
     pub fn from_tuple(tuple: (Vertex, Vertex, Vertex, Vertex)) -> Facet {
-        Facet { normal: tuple.0, a: tuple.1, b: tuple.2, c: tuple.3 }
+        Facet { normal: tuple.0, v1: tuple.1, v2: tuple.2, v3: tuple.3, attribute: 0 }
+    }
+
+    pub fn from_tuple_with_attribute(tuple: (Vertex, Vertex, Vertex, Vertex, u16)) -> Facet {
+        Facet { normal: tuple.0, v1: tuple.1, v2: tuple.2, v3: tuple.3, attribute: tuple.4 }
     }
 }

@@ -5,3 +5,6 @@ authors = ["waved"]
 
 [dependencies]
 nom = "^3.2"
+
+[dev-dependencies]
+glium = "*"

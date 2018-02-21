@@ -64,17 +64,17 @@ mod tests {
         assert_eq!(facet.normal.y, 0.3f32);
         assert_eq!(facet.normal.z, 0.4f32);
         //vertex 1
-        assert_eq!(facet.a.x, 1.0f32);
-        assert_eq!(facet.a.y, 2.3f32);
-        assert_eq!(facet.a.z, 3.4f32);
+        assert_eq!(facet.v1.x, 1.0f32);
+        assert_eq!(facet.v1.y, 2.3f32);
+        assert_eq!(facet.v1.z, 3.4f32);
         //vertex 2
-        assert_eq!(facet.b.x, 2.2f32);
-        assert_eq!(facet.b.y, 2.5f32);
-        assert_eq!(facet.b.z, 3.9f32);
+        assert_eq!(facet.v2.x, 2.2f32);
+        assert_eq!(facet.v2.y, 2.5f32);
+        assert_eq!(facet.v2.z, 3.9f32);
         //vertex 3
-        assert_eq!(facet.c.x, 3.5f32);
-        assert_eq!(facet.c.y, 40.1f32);
-        assert_eq!(facet.c.z, 22.3f32);
+        assert_eq!(facet.v3.x, 3.5f32);
+        assert_eq!(facet.v3.y, 40.1f32);
+        assert_eq!(facet.v3.z, 22.3f32);
     }
 
     #[test]
@@ -116,17 +116,17 @@ mod tests {
         assert_eq!(first.normal.y, 0.0f32);
         assert_eq!(first.normal.z, -1.0f32);
 
-        assert_eq!(first.a.x, 0.0f32);
-        assert_eq!(first.a.y, 0.0f32);
-        assert_eq!(first.a.z, 0.0f32);
+        assert_eq!(first.v1.x, 0.0f32);
+        assert_eq!(first.v1.y, 0.0f32);
+        assert_eq!(first.v1.z, 0.0f32);
 
-        assert_eq!(first.b.x, 1.0f32);
-        assert_eq!(first.b.y, 1.0f32);
-        assert_eq!(first.b.z, 0.0f32);
+        assert_eq!(first.v2.x, 1.0f32);
+        assert_eq!(first.v2.y, 1.0f32);
+        assert_eq!(first.v2.z, 0.0f32);
 
-        assert_eq!(first.c.x, 1.0f32);
-        assert_eq!(first.c.y, 0.0f32);
-        assert_eq!(first.c.z, 0.0f32);
+        assert_eq!(first.v3.x, 1.0f32);
+        assert_eq!(first.v3.y, 0.0f32);
+        assert_eq!(first.v3.z, 0.0f32);
     }
 }
 
@@ -134,6 +134,7 @@ mod tests {
 extern crate nom;
 
 mod data;
+mod binary;
 
 pub use data::{Vertex, Facet};
 use nom::{float, is_space, alpha, IResult};
@@ -167,7 +168,6 @@ named!(triangle_parser<&[u8], (Vertex, Vertex, Vertex)>,
     )
 );
 
-//we also need to deal with outer loop and endloop words
 named!(loop_record<&[u8], (Vertex, Vertex, Vertex)>, ws!(delimited!(tag!("outer loop"), triangle_parser, tag!("endloop"))));
 
 //do_parse! seems to be the solution for multiple subparser chaining and result aggregation
@@ -206,6 +206,7 @@ named!(parse_beginning<&[u8], Option<&[u8]>>,
 );
 
 //sometimes there's no name after endsolid, sometimes there is
+//actually I could replace do_parse with more specific parsers like delimited
 named!(parse_ending<&[u8], Option<&[u8]>>,
     do_parse!(
         tag!("endsolid") >>
