@@ -134,7 +134,7 @@ mod tests {
 extern crate nom;
 
 mod data;
-mod binary;
+pub mod binary;
 
 pub use data::{Vertex, Facet};
 use nom::{float, is_space, alpha, IResult};
