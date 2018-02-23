@@ -6,7 +6,6 @@ mod tests {
 
     #[test]
     fn parse_binary_header() {
-        //take 80 bytes
         
     }
 
@@ -47,7 +46,7 @@ named!(read_all_facets<Vec<Facet>>,
     do_parse!(
         read_header >>
         triangles: le_u16 >>
-        facets: many_m_n!(triangles as usize, triangles as usize, read_facet) >>
+        facets: count!(read_facet, triangles as usize) >>
         (facets)
     )
 );
