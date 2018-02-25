@@ -23,9 +23,26 @@ mod tests {
 
 use data::{Vertex, Facet};
 use nom::{le_f32, le_u16, IResult};
+use std::str::from_utf8;
 
 //should we check that it doesn't start with "solid"?
+//yeah, use verify! for that
 named!(read_header, take!(80));
+
+named!(verify_header, 
+    verify!(
+            take!(80), |header: &[u8]| {
+                let bytes = &header[0..5];
+                let s = from_utf8(bytes).unwrap();
+
+                if s.starts_with("solid") {
+                    false
+                } else {
+                    true
+                }
+            }
+        )
+);
 
 named!(read_vertex<Vertex>, 
     map!(
