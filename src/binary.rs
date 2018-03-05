@@ -6,7 +6,10 @@ mod tests {
 
     #[test]
     fn parse_binary_header() {
-        
+        let bytes = include_bytes!("../test_files/cube_bin.stl");
+        let verts = read_stl(bytes).unwrap().1;
+
+        println!("{:?}", verts);
     }
 
     #[test]
@@ -27,7 +30,7 @@ use std::str::from_utf8;
 
 //should we check that it doesn't start with "solid"?
 //yeah, use verify! for that
-named!(read_header, take!(80));
+// named!(read_header, take!(80));
 
 named!(verify_header, 
     verify!(
@@ -35,11 +38,7 @@ named!(verify_header,
                 let bytes = &header[0..5];
                 let s = from_utf8(bytes).unwrap();
 
-                if s.starts_with("solid") {
-                    false
-                } else {
-                    true
-                }
+                !s.starts_with("solid")
             }
         )
 );
@@ -61,7 +60,7 @@ named!(read_facet<Facet>,
 //u16! macro requires endianness parameter to work
 named!(read_all_facets<Vec<Facet>>,
     do_parse!(
-        read_header >>
+        verify_header >>
         triangles: le_u16 >>
         facets: count!(read_facet, triangles as usize) >>
         (facets)
