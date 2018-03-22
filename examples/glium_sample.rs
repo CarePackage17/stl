@@ -6,7 +6,8 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::env;
 use glium::{glutin, Surface};
-use parsing_experiments::{parse_ascii_stl, Vertex};
+use parsing_experiments::{Vertex};
+use parsing_experiments::ascii;
 
 fn main() {
     //so, our vertex and facet types are there;
@@ -32,7 +33,7 @@ fn main() {
 
         file.read_to_end(&mut buffer).unwrap();
         
-        let faces = parse_ascii_stl(&buffer).unwrap().1;
+        let faces = ascii::parse(&buffer).unwrap().1;
         
         //create vertex buffer here
     //     let mut events_loop = glutin::EventsLoop::new();

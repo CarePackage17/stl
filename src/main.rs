@@ -3,7 +3,7 @@ extern crate parsing_experiments;
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
-use parsing_experiments::parse_ascii_stl;
+use parsing_experiments::*;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -20,7 +20,7 @@ fn main() {
 
         file.read_to_end(&mut buffer).unwrap();
         
-        let faces = parse_ascii_stl(&buffer).unwrap().1;
+        let faces = ascii::parse(&buffer).unwrap().1;
         println!("{:?}", faces);
     }
 }

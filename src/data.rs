@@ -2,19 +2,30 @@
 /// Consists of 3 f32 coordinates.
 #[derive(Debug)]
 pub struct Vertex {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
+    position: [f32; 3]
+    // pub x: f32,
+    // pub y: f32,
+    // pub z: f32,
 }
 
 impl Vertex {
     /// Creates a Vertex from a 3-tuple of f32.
     pub fn from_tuple(tuple: (f32, f32, f32)) -> Vertex {
         Vertex {
-            x: tuple.0,
-            y: tuple.1,
-            z: tuple.2,
+            position: [tuple.0, tuple.1, tuple.2]
         }
+    }
+
+    pub fn x(&self) -> f32 {
+        self.position[0]
+    }
+
+    pub fn y(&self) -> f32 {
+        self.position[1]
+    }
+
+    pub fn z(&self) -> f32 {
+        self.position[2]
     }
 }
 

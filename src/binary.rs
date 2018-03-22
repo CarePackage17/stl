@@ -18,9 +18,9 @@ mod tests {
         let vertex_bytes = unsafe { ::std::mem::transmute::<[f32; 3], [u8; 12]>(vertex) };
         
         let res = read_vertex(&vertex_bytes).unwrap().1;
-        assert_eq!(res.x, 1.4f32);
-        assert_eq!(res.y, 1.6f32);
-        assert_eq!(res.z, 3.7f32);
+        assert_eq!(res.x(), 1.4f32);
+        assert_eq!(res.y(), 1.6f32);
+        assert_eq!(res.z(), 3.7f32);
     }
 }
 
