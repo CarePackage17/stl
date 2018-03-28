@@ -109,7 +109,7 @@ mod tests {
     #[test]
     fn parse_full() {
         let bytes = include_bytes!("../test_files/cube.stl");
-        let verts = parse(bytes).unwrap().1;
+        let verts = read_stl(bytes).unwrap().1;
 
         let first = &verts[0];
         assert_eq!(first.normal.x(), 0.0f32);
@@ -219,6 +219,7 @@ named!(parse_full_ascii_stl<&[u8], Vec<Facet>>,
 );
 
 /// Parses an ASCII .stl file and returns the list of facets.
-pub fn parse(input: &[u8]) -> IResult<&[u8], Vec<Facet>> {
+/// TODO: return a result instead of IResult (or upgrade to nom 4, which uses that)
+pub fn read_stl(input: &[u8]) -> IResult<&[u8], Vec<Facet>> {
     parse_full_ascii_stl(input)
 }

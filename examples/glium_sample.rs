@@ -33,65 +33,99 @@ fn main() {
 
         file.read_to_end(&mut buffer).unwrap();
         
-        let faces = ascii::parse(&buffer).unwrap().1;
+        let faces = ascii::read_stl(&buffer).unwrap().1;
         
-        //create vertex buffer here
-    //     let mut events_loop = glutin::EventsLoop::new();
-    //     let window = glutin::WindowBuilder::new();
-    //     let context = glutin::ContextBuilder::new();
-    //     let display = glium::Display::new(window, context, &events_loop).unwrap();
+        implement_vertex!(AppVertex, position, normal);
 
-    //     let positions = glium::VertexBuffer::new(&display, &teapot::VERTICES).unwrap();
-    //     // let normals = glium::VertexBuffer::new(&display, &teapot::NORMALS).unwrap();
-    //     // let indices = glium::IndexBuffer::new(&display, glium::index::PrimitiveType::TrianglesList,
-    //     //                                     &teapot::INDICES).unwrap();
+        let mut events_loop = glutin::EventsLoop::new();
+        let window = glutin::WindowBuilder::new();
+        let context = glutin::ContextBuilder::new();
+        let display = glium::Display::new(window, context, &events_loop).unwrap();
 
-    //     let vertex_shader_src = r#"
-    //         #version 140
-    //         in vec3 position;
-    //         in vec3 normal;
-    //         uniform mat4 matrix;
-    //         void main() {
-    //             gl_Position = matrix * vec4(position, 1.0);
-    //         }
-    //     "#;
+        //we get a vec of facets which needs to be converted to a flat buffer of vertex data,
+        //i.e. per-vertex positions and normals
+        //this doesn't seem to be possible with iterators, at least not straightforward (or I just don't see
+        //it in the docs). maybe changing the API to return a pair of Normal and Triangle would be easier
+        //because then I could use unzip to create separate collections for both...but then I still need to merge.
+        //also, itertools might be useful, so I should look into that before making hasty decisions.
+        let mut vertices: Vec<AppVertex> = Vec::with_capacity(faces.len() * 3 * 3);
 
-    //     let fragment_shader_src = r#"
-    //         #version 140
-    //         out vec4 color;
-    //         void main() {
-    //             color = vec4(1.0, 0.0, 0.0, 1.0);
-    //         }
-    //     "#;
+        for facet in faces {
+            let v1 = AppVertex {
+                position: [ facet.v1.x(), facet.v1.y(), facet.v1.z() ],
+                normal: [ facet.normal.x(), facet.normal.y(), facet.normal.z() ]
+            };
 
-    //     let program = glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src,
-    //                                             None).unwrap();
+            let v2 = AppVertex {
+                position: [ facet.v2.x(), facet.v2.y(), facet.v2.z() ],
+                normal: [ facet.normal.x(), facet.normal.y(), facet.normal.z() ]
+            };
 
-    //     let mut closed = false;
-    //     while !closed {
-    //         let mut target = display.draw();
-    //         target.clear_color(0.0, 0.0, 1.0, 1.0);
+            let v3 = AppVertex {
+                position: [ facet.v3.x(), facet.v3.y(), facet.v3.z() ],
+                normal: [ facet.normal.x(), facet.normal.y(), facet.normal.z() ]
+            };
 
-    //         let matrix = [
-    //             [0.01, 0.0, 0.0, 0.0],
-    //             [0.0, 0.01, 0.0, 0.0],
-    //             [0.0, 0.0, 0.01, 0.0],
-    //             [0.0, 0.0, 0.0, 1.0f32]
-    //         ];
+            vertices.push(v1);
+            vertices.push(v2);
+            vertices.push(v3);
+        }
 
-    //         // target.draw((&positions, &normals), &indices, &program, &uniform! { matrix: matrix },
-    //         //             &Default::default()).unwrap();
-    //         target.finish().unwrap();
+        let vertex_buffer = glium::VertexBuffer::new(&display, &vertices).unwrap();
+        let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
-    //         events_loop.poll_events(|event| {
-    //             match event {
-    //                 glutin::Event::WindowEvent { event, .. } => match event {
-    //                     glutin::WindowEvent::Closed => closed = true,
-    //                     _ => ()
-    //                 },
-    //                 _ => (),
-    //             }
-    //         });
-    //     }
+        let vertex_shader_src = r#"
+            #version 140
+            in vec3 position;
+            in vec3 normal;
+            uniform mat4 matrix;
+            void main() {
+                gl_Position = matrix * vec4(position, 1.0);
+            }
+        "#;
+
+        let fragment_shader_src = r#"
+            #version 140
+            out vec4 color;
+            void main() {
+                color = vec4(1.0, 0.0, 0.0, 1.0);
+            }
+        "#;
+
+        let program = glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src,
+                                                None).unwrap();
+
+        let mut closed = false;
+        while !closed {
+            let mut target = display.draw();
+            target.clear_color(0.0, 0.0, 1.0, 1.0);
+
+            let matrix = [
+                [0.1, 0.0, 0.0, 0.0],
+                [0.0, 0.1, 0.0, 0.0],
+                [0.0, 0.0, 0.1, 0.0],
+                [0.0, 0.0, 0.0, 1.0f32]
+            ];
+
+            target.draw(&vertex_buffer, &indices, &program, &uniform! { matrix: matrix },
+                        &Default::default()).unwrap();
+            target.finish().unwrap();
+
+            events_loop.poll_events(|event| {
+                match event {
+                    glutin::Event::WindowEvent { event, .. } => match event {
+                        glutin::WindowEvent::Closed => closed = true,
+                        _ => ()
+                    },
+                    _ => (),
+                }
+            });
+        }
+    }
+
+    #[derive(Copy, Clone, Debug)]
+    struct AppVertex {
+        position: [f32; 3],
+        normal: [f32; 3]
     }
 }

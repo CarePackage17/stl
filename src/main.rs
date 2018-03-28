@@ -20,7 +20,7 @@ fn main() {
 
         file.read_to_end(&mut buffer).unwrap();
         
-        let faces = ascii::parse(&buffer).unwrap().1;
+        let faces = ascii::read_stl(&buffer).unwrap().1;
         println!("{:?}", faces);
     }
 }
