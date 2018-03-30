@@ -1,5 +1,5 @@
 [package]
-name = "parsing_experiments"
+name = "stl"
 version = "0.1.0"
 authors = ["waved"]
 

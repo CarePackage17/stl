@@ -1,9 +1,9 @@
-extern crate parsing_experiments;
+extern crate stl;
 
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
-use parsing_experiments::*;
+use stl::*;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

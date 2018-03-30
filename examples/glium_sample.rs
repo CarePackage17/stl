@@ -1,13 +1,12 @@
 #[macro_use]
 extern crate glium;
-extern crate parsing_experiments;
+extern crate stl;
 
 use std::fs::File;
 use std::io::prelude::*;
 use std::env;
 use glium::{glutin, Surface};
-use parsing_experiments::{Vertex};
-use parsing_experiments::ascii;
+use stl::ascii;
 
 fn main() {
     //so, our vertex and facet types are there;
