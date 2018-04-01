@@ -16,7 +16,7 @@ mod tests {
     fn parse_vertex() {
         let vertex = [1.4f32, 1.6, 3.7];
         let vertex_bytes = unsafe { ::std::mem::transmute::<[f32; 3], [u8; 12]>(vertex) };
-        
+
         let res = read_vertex(&vertex_bytes).unwrap().1;
         assert_eq!(res.x(), 1.4f32);
         assert_eq!(res.y(), 1.6f32);
@@ -25,7 +25,7 @@ mod tests {
 }
 
 use data::{Vertex, Facet};
-use nom::{le_f32, le_u16, IResult};
+use nom::{le_f32, le_u32, le_u16, IResult};
 use std::str::from_utf8;
 
 //should we check that it doesn't start with "solid"?
@@ -58,11 +58,13 @@ named!(read_facet<Facet>,
 );
 
 //u16! macro requires endianness parameter to work
+//also, we should check for EOF at the end
 named!(read_all_facets<Vec<Facet>>,
     do_parse!(
         verify_header >>
-        triangles: le_u16 >>
+        triangles: le_u32 >>
         facets: count!(read_facet, triangles as usize) >>
+        eof!() >>
         (facets)
     )
 );

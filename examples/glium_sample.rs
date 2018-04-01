@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::env;
 use glium::{glutin, Surface};
-use stl::ascii;
+use stl::binary;
 
 fn main() {
     //so, our vertex and facet types are there;
@@ -32,7 +32,9 @@ fn main() {
 
         file.read_to_end(&mut buffer).unwrap();
         
-        let faces = ascii::read_stl(&buffer).unwrap().1;
+        // let faces = ascii::read_stl(&buffer).unwrap().1;
+        let faces = binary::read_stl(&buffer).unwrap().1;
+        println!("{:?}", faces);
         
         implement_vertex!(AppVertex, position, normal);
 

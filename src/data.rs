@@ -29,7 +29,8 @@ impl Vertex {
     }
 }
 
-/// A triangle facet consisting of a normal vector and 3 vertices.
+//instead of this we should return a (Normal, Triangle) for easier
+//vertex buffer building on the app side
 #[derive(Debug)]
 pub struct Facet {
     pub normal: Vertex,
