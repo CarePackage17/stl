@@ -34,7 +34,7 @@ fn main() {
         
         // let faces = ascii::read_stl(&buffer).unwrap().1;
         let faces = binary::read_stl(&buffer).unwrap().1;
-        println!("{:?}", faces);
+        // println!("{:?}", faces);
         
         implement_vertex!(AppVertex, position, normal);
 

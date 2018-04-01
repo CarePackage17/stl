@@ -220,6 +220,7 @@ named!(parse_full_ascii_stl<&[u8], Vec<Facet>>,
 
 /// Parses an ASCII .stl file and returns the list of facets.
 /// TODO: return a result instead of IResult (or upgrade to nom 4, which uses that)
+/// TODO: rename to read as the crate is now called stl
 pub fn read_stl(input: &[u8]) -> IResult<&[u8], Vec<Facet>> {
     parse_full_ascii_stl(input)
 }

@@ -28,9 +28,13 @@ use data::{Vertex, Facet};
 use nom::{le_f32, le_u32, le_u16, IResult};
 use std::str::from_utf8;
 
-//should we check that it doesn't start with "solid"?
-//yeah, use verify! for that
-// named!(read_header, take!(80));
+
+//actually, some NASA files are binary but start with "solid"...fuck that
+//man, how can I verify it's an STL then apart from trial and error?
+//I need to get my hands on as many files as possible to see how common this
+//is. But most likely I'll need to ignore this anyway, I mean I don't even provide
+//format detection so it's the user's choice whether he wants to parse ascii or binary
+//anyway, I could provide a "strict" and a "don't give a fuck about the header" mode
 
 named!(verify_header, 
     verify!(
