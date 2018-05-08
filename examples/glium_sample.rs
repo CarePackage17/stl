@@ -9,16 +9,6 @@ use glium::{glutin, Surface};
 use stl::binary;
 
 fn main() {
-    //so, our vertex and facet types are there;
-    //however, glium expects flat arrays for implement_vertex!
-    //could we use the into trait, maybe?
-    //could we make the data layout fixed by default and return a Vec<f32> that
-    //contains all the vertices?
-    //but then normals would have to be duplicated unless I'm wrong and there is
-    //a way to do per-facet normals with vertex buffers which I'm not aware of.
-    //anyway, first sample should be simple and easy and doesn't need to be efficient
-    //at all. so we can just parse and then copy everything Into<AppVertex> or whatever.
-    
     let args: Vec<String> = env::args().collect();
     
     if args.len() < 2 {
@@ -34,7 +24,6 @@ fn main() {
         
         // let faces = ascii::read_stl(&buffer).unwrap().1;
         let faces = binary::read_stl(&buffer).unwrap().1;
-        // println!("{:?}", faces);
         
         implement_vertex!(AppVertex, position, normal);
 
@@ -79,17 +68,27 @@ fn main() {
             #version 140
             in vec3 position;
             in vec3 normal;
+            out vec3 v_normal;
+            out vec3 v_position;
             uniform mat4 matrix;
+
             void main() {
+                v_position = position;
+                v_normal = normal;
                 gl_Position = matrix * vec4(position, 1.0);
             }
         "#;
 
         let fragment_shader_src = r#"
             #version 140
-            out vec4 color;
+            in vec3 v_normal;
+            out vec4 f_color;
+            const vec3 LIGHT = vec3(-0.2, 0.8, 0.1);
+
             void main() {
-                color = vec4(1.0, 0.0, 0.0, 1.0);
+                float lum = max(dot(normalize(v_normal), normalize(LIGHT)), 0.0);
+                vec3 color = (0.3 + 0.7 * lum) * vec3(1.0, 1.0, 1.0);
+                f_color = vec4(color, 1.0);
             }
         "#;
 
@@ -102,9 +101,9 @@ fn main() {
             target.clear_color(0.0, 0.0, 1.0, 1.0);
 
             let matrix = [
-                [0.1, 0.0, 0.0, 0.0],
-                [0.0, 0.1, 0.0, 0.0],
-                [0.0, 0.0, 0.1, 0.0],
+                [0.5, 0.0, 0.0, 0.0],
+                [0.0, 0.5, 0.0, 0.0],
+                [0.0, 0.0, 0.5, 0.0],
                 [0.0, 0.0, 0.0, 1.0f32]
             ];
 
